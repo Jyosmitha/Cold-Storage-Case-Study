@@ -1,0 +1,188 @@
+---
+title: "Cold Storage Project"
+output:
+  word_document: default
+  html_notebook: default
+  pdf_document: default
+---
+
+Setting the work directory and Importing the file :
+
+```{r}
+setwd("C:/Users/ammu/Desktop/Great Lakes/2. Statistical Method Decision Making/Project")
+ColdStorage1=read.csv("Cold_Storage_Temp_Data.csv")
+attach(ColdStorage1)
+```
+
+Importing the package:
+
+```{r}
+library(dplyr)
+library(ggplot2)
+library(lattice)
+```
+
+Descriptive Statistics:
+
+```{r}
+View(ColdStorage1)
+dim(ColdStorage1)
+summary(ColdStorage1)
+str(ColdStorage1)
+head(ColdStorage1)
+tail(ColdStorage1)
+colnames(ColdStorage1)
+anyNA(ColdStorage1)
+```
+
+Exploratory Analysis:
+
+a.Univariate Analysis:
+
+```{r}
+
+boxplot(Temperature,xlab="Temperature",col="green",horizontal = TRUE,main="Temperature")
+hist(Temperature, xlab = "Temperature", col = "red")
+plot(Month, main="Months Chart")
+plot(Season,col=c("green","blue","red"),main="Season Chart")
+table(Month)
+table(Season)
+
+```
+
+b. Bivariate Analysis
+
+```{r}
+boxplot(Temperature~Season,col=c("green","blue","red"))
+ggplot(ColdStorage1, aes(x = Season, y = Temperature, fill = Month)) + geom_boxplot() + ggtitle("Season vs Temperature") 
+ggplot(ColdStorage1, aes(x = Month, y = Temperature, fill = Season)) + geom_boxplot() + ggtitle("Months vs Temperture")
+qplot(Month,Temperature,data=ColdStorage1,col=Season,Main="Temperature across months")
+qplot(Season,Temperature,data=ColdStorage1,col=Season)
+```
+
+
+Assignment Questions:
+
+1. Problem 1:
+
+1.1 Find mean cold storage temperature for Summer, Winter and Rainy Season
+
+```{r}
+WinterTemp=ColdStorage1%>% select(Season,Temperature) %>% filter(Season=="Winter")%>% summarise(mean=mean(Temperature))
+SummerTemp=ColdStorage1%>% select(Season,Temperature) %>% filter(Season=="Summer")%>% summarise(mean=mean(Temperature))
+RainyTemp=ColdStorage1%>% select(Season,Temperature) %>% filter(Season=="Rainy")%>% summarise(mean=mean(Temperature))
+WinterTemp
+SummerTemp
+RainyTemp
+```
+
+Ans: Mean of Temperatures for respective seasons are as below:
+
+Mean of Winter Season Temperature is 2.700813
+Mean of Summer Season Temperature is 3.153333
+Mean of Rainy Season Temperature is 3.039344
+
+1.2 Find overall mean for the full year
+
+```{r}
+MeanforYear=mean(Temperature)
+MeanforYear
+```
+
+Ans: Mean of Overall Temperatures through out the year is 2.96274
+
+1.3 Find Standard Deviation for the full year
+
+```{r}
+SdforYear=sd(Temperature)
+SdforYear
+```
+
+Ans: Standard deviation of the temperature though out the year is  0.508589
+
+1.4 Assume Normal distribution, what is the probability of temperature having fallen below 2 deg C?
+
+```{r}
+lessThan2C=2
+normMean=mean(ColdStorage1$Temperature)
+normSD=sd(ColdStorage1$Temperature)
+below2Cprob=pnorm(lessThan2C,normMean,normSD)
+below2Cprob
+```
+
+Ans: The probability of temperature having fallen below 2 deg C 0.02918146
+
+1.5 Assume Normal distribution, what is the probability of temperature having gone above 4 C?
+
+```{r}
+moreThan4C=4
+above4Cprob=1-pnorm(moreThan4C,normMean,normSD)
+above4Cprob
+```
+
+Ans: The probability of temperature having gone above 4 C 0.02070077
+
+1.6 What will be the penalty for the AMC Company? 
+
+```{r}
+totalProb=below2Cprob+above4Cprob
+Penalty=totalProb*100
+Penalty
+```
+
+Ans: It was given that "probability of temperature going outside the 2 - 4 C during the one-year contract was above 2.5% and less than 5% then the penalty would be 10% of AMC (annual maintenance case)."
+
+Since the calculated probability of temperature going outside 2 - 4 C is 4.988223 which is equal to 4.99% approximately, the penalty would be 10% of AMC (Annaual Maintenance Case)
+
+Problem 2:
+
+1.	Which Hypothesis test shall be performed to check the if corrective action is needed at the cold storage plant? Justify your answer?
+
+Ans: We have to perform single sample right tail t-test to check if there is corrective action needed at cold storage plant.
+
+Single Sample :since we have only one variable called temperature.
+Right tail: since we are testing hypothesis at greater sign
+T- test: since we have the sample mean, and n>30 and the population standard deviation is not known. Hence we cannot perform Z t-test but only T- test.
+
+
+2.	State the Hypothesis, perform hypothesis test and determine p-value?
+
+Ans: 
+
+Null Hypothesis: 
+Null hypothesis is something which is the commonly occuring scenario or believed to be TRUE
+Here the commonly believed fact is that the cold storage is maintaining optimum temperate, i.e <=3.9
+
+Hence Null hypothesis is: meanTemp<=3.9
+
+Alternate Hypothesis:
+This is something which are trying to prove or which is deviation from normal. Here since the customers are complaning that dairy products are going sour and often smelling. This will happen only if the temperature is maintained greater than 3.9
+
+Hence Alternate Hypothesis: meanTemp>3.9
+
+p-value Calculation:
+
+
+```{r}
+setwd("C:/Users/ammu/Desktop/Great Lakes/2. Statistical Method Decision Making/Project")
+ColdStorage2=read.csv("Cold_Storage_Mar2018.csv")
+attach(ColdStorage2)
+MeanTemp2=mean(Temperature)
+MeanTemp2
+SdTemp2=sd(Temperature)
+SdTemp2
+n=35
+alpha=0.1
+confLevel=1-0.1
+
+t.test(Temperature,mu=3.9,alternative = "greater", paired = FALSE,conf.level = confLevel )
+
+```
+
+Ans: Here p-value calculated p-value is = 0.004711 and given alpha is =0.1
+
+Since the p-value is low, null hypothesis will be rejected.
+
+3.	Give your inference.
+
+The problem is at the Cold Storage Plant and not from the procurement side. As per our hypothesis test, we are able to prove that mean temperature is not being maintained at 3.9 C or below with 90% confidence level. Since the sample size is greater >30, this is good enough to predict that a similar outcome will happen though the population of 1 year data is considered.
